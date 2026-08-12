@@ -3,7 +3,7 @@ import {
   Activity, User, Users, ClipboardList, TrendingDown, Share2, DollarSign,
   Zap, Hexagon, ChevronRight, Plus, Check, Radio, Download, Home,
   Calendar, Settings, Search, Bell, MessageCircle, PanelLeft, Sparkles, Filter,
-  UserPlus, X
+  UserPlus, X, Trash2
 } from "lucide-react";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar
@@ -495,7 +495,7 @@ function PaginaResumo({ pacientes }) {
    PÁGINA · PRONTUÁRIO
 ============================================================ */
 
-function PaginaProntuario({ pacientes, selecionadoId, onSelecionar, onAdicionar }) {
+function PaginaProntuario({ pacientes, selecionadoId, onSelecionar, onAdicionar, onExcluir }) {
   const p = pacientes.find((x) => x.id === selecionadoId);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [nome, setNome] = useState("");
@@ -570,7 +570,22 @@ function PaginaProntuario({ pacientes, selecionadoId, onSelecionar, onAdicionar 
                 <div className="amp-pname">{pac.nome}</div>
                 <div className="amp-pdiag mono">{pac.diagnostico}</div>
               </div>
-              <ChevronRight size={14} color="var(--muted)" />
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <button
+                  className="btn ghost"
+                  style={{ padding: "5px 8px" }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (window.confirm(`Excluir ${pac.nome}? Essa ação não pode ser desfeita.`)) {
+                      onExcluir(pac.id);
+                    }
+                  }}
+                  title="Excluir paciente"
+                >
+                  <Trash2 size={13} />
+                </button>
+                <ChevronRight size={14} color="var(--muted)" />
+              </div>
             </div>
           ))}
         </div>
@@ -957,6 +972,16 @@ export default function Amplitude() {
     setSelecionadoId(novo.id);
   };
 
+  const excluirPaciente = (id) => {
+    setPacientes((prev) => {
+      const restantes = prev.filter((p) => p.id !== id);
+      if (id === selecionadoId) {
+        setSelecionadoId(restantes.length ? restantes[0].id : null);
+      }
+      return restantes;
+    });
+  };
+
   const TITULOS = {
     resumo: "Resumo",
     pacientes: "Pacientes",
@@ -1026,7 +1051,7 @@ export default function Amplitude() {
         <div className="amp-content">
           {carregando && <div className="empty">Carregando seus dados...</div>}
           {!carregando && pagina === "resumo" && <PaginaResumo pacientes={pacientes} />}
-          {!carregando && pagina === "pacientes" && <PaginaProntuario pacientes={pacientes} selecionadoId={selecionadoId} onSelecionar={setSelecionadoId} onAdicionar={adicionarPaciente} />}
+          {!carregando && pagina === "pacientes" && <PaginaProntuario pacientes={pacientes} selecionadoId={selecionadoId} onSelecionar={setSelecionadoId} onAdicionar={adicionarPaciente} onExcluir={excluirPaciente} />}
           {!carregando && pagina === "protocolo" && <PaginaProtocolo pacientes={pacientes} selecionadoId={selecionadoId} onSelecionar={setSelecionadoId} />}
           {!carregando && pagina === "evolucao" && <PaginaEvolucao pacientes={pacientes} selecionadoId={selecionadoId} onSelecionar={setSelecionadoId} onNovaSessao={registrarSessao} />}
           {!carregando && pagina === "performance" && <PaginaPerformance pacientes={pacientes} selecionadoId={selecionadoId} onSelecionar={setSelecionadoId} />}
